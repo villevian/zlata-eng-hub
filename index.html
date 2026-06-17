@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Exam Preparation · Identity A2–B1</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root{
+    --ink:#1f2421;
+    --muted:#5a6661;
+    --line:rgba(255,255,255,.55);
+    --done:#2f7d5b;
+    --done-soft:rgba(231,243,236,.7);
+    --accent:#7a5cc9;
+    --accent-soft:rgba(245,236,255,.6);
+    --glass-bg:rgba(255,255,255,.55);
+    --glass-bg-strong:rgba(255,255,255,.78);
+    --glass-border:rgba(255,255,255,.7);
+    --shadow:0 1px 2px rgba(31,36,33,.05),0 12px 32px rgba(31,36,33,.1);
+    --radius:14px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;min-height:100%}
+  body{
+    color:var(--ink);
+    font-family:"Iowan Old Style",Georgia,"Times New Roman",serif;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+    background-image:url("bg.png");
+    background-size:cover;
+    background-position:center top;
+    background-attachment:fixed;
+    background-repeat:no-repeat;
+    background-color:#cfe0f1;
+  }
+  .wrap{max-width:780px;margin:0 auto;padding:32px 20px 96px}
+
+  /* Navigation */
+  .nav{
+    display:flex;gap:8px;flex-wrap:wrap;margin-bottom:28px;
+    background:var(--glass-bg);backdrop-filter:blur(18px) saturate(1.4);
+    -webkit-backdrop-filter:blur(18px) saturate(1.4);
+    border:1px solid var(--glass-border);border-radius:14px;padding:8px;
+    box-shadow:var(--shadow);
+  }
+  .nav a{
+    flex:1;text-align:center;padding:10px 12px;border-radius:10px;
+    text-decoration:none;color:var(--ink);font-size:14px;font-weight:600;
+    letter-spacing:.01em;transition:.15s;white-space:nowrap;
+    font-family:inherit;
+  }
+  .nav a:hover{background:rgba(255,255,255,.5)}
+  .nav a.active{background:var(--ink);color:#fff}
+  .nav a.soon{color:var(--muted);cursor:not-allowed}
+  .nav a.soon:hover{background:transparent}
+  .nav a.soon::after{
+    content:" · скоро";font-size:10px;font-weight:400;opacity:.6;
+    font-family:ui-monospace,monospace;letter-spacing:.05em;
+  }
+
+  /* Header / hero */
+  .eyebrow{
+    font-family:ui-monospace,"SF Mono",Menlo,monospace;
+    font-size:11px;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--accent);margin:0 0 10px;
+    text-shadow:0 1px 2px rgba(255,255,255,.6);
+  }
+  h1{
+    font-size:clamp(32px,6vw,44px);line-height:1.05;margin:0 0 8px;
+    font-weight:600;letter-spacing:-.015em;
+    text-shadow:0 1px 2px rgba(255,255,255,.5);
+  }
+  .sub{color:var(--ink);margin:0 0 24px;font-size:15px;opacity:.85}
+
+  /* Glass panel base */
+  .glass{
+    background:var(--glass-bg-strong);
+    backdrop-filter:blur(20px) saturate(1.4);
+    -webkit-backdrop-filter:blur(20px) saturate(1.4);
+    border:1px solid var(--glass-border);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+  }
+
+  /* Progress */
+  .progress{padding:18px 20px;margin-bottom:14px}
+  .progress-top{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:10px}
+  .progress-num{font-size:30px;font-weight:600;letter-spacing:-.02em}
+  .progress-num small{font-size:15px;color:var(--muted);font-weight:400}
+  .progress-label{font-family:ui-monospace,monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+  .bar{height:10px;background:rgba(255,255,255,.45);border-radius:999px;overflow:hidden}
+  .bar > i{display:block;height:100%;background:linear-gradient(90deg,var(--done),#3a9d72);width:0;transition:width .4s ease}
+
+  /* Connection panel */
+  .conn{padding:14px 16px;margin-bottom:22px;font-size:14px;background:var(--accent-soft);border:1px solid rgba(255,255,255,.6);border-radius:var(--radius);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+  .conn.ok{background:var(--done-soft)}
+  .conn .status{font-size:13px;color:var(--muted)}
+  .conn .status b{color:var(--done)}
+
+  /* Sections */
+  .section{margin-bottom:12px;overflow:hidden}
+  .section > summary{
+    list-style:none;cursor:pointer;padding:16px 18px;display:flex;align-items:center;gap:12px;
+    user-select:none;
+  }
+  .section > summary::-webkit-details-marker{display:none}
+  .sec-chevron{transition:transform .2s;color:var(--muted);flex:none}
+  .section[open] .sec-chevron{transform:rotate(90deg)}
+  .sec-title{font-weight:600;font-size:16px;flex:1}
+  .sec-count{
+    font-family:ui-monospace,monospace;font-size:12px;color:var(--muted);
+    background:rgba(255,255,255,.55);padding:3px 9px;border-radius:999px;white-space:nowrap;
+  }
+  .section[data-complete="1"] .sec-count{background:var(--done-soft);color:var(--done)}
+  .sec-body{padding:0 18px 8px}
+  .group-label{
+    font-family:ui-monospace,monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--accent);margin:14px 0 6px;
+  }
+
+  /* Items */
+  .item{
+    display:flex;align-items:flex-start;gap:11px;padding:8px 4px;
+    border-bottom:1px solid rgba(255,255,255,.4);
+    cursor:pointer;
+  }
+  .item:last-child{border-bottom:0}
+  .box{
+    flex:none;width:20px;height:20px;border:2px solid rgba(31,36,33,.25);border-radius:6px;margin-top:2px;
+    display:grid;place-items:center;transition:.15s;background:rgba(255,255,255,.7);
+  }
+  .box svg{width:12px;height:12px;opacity:0;transform:scale(.5);transition:.15s}
+  .item.done .box{background:var(--done);border-color:var(--done)}
+  .item.done .box svg{opacity:1;transform:scale(1)}
+  .item-text{flex:1;font-size:15px}
+  .item.done .item-text{color:var(--muted);text-decoration:line-through;text-decoration-color:#9aa9a3}
+  .item-date{font-family:ui-monospace,monospace;font-size:10px;color:var(--muted);opacity:0;white-space:nowrap;margin-top:4px}
+  .item.done .item-date{opacity:.8}
+  .item code{font-family:ui-monospace,monospace;background:rgba(255,255,255,.5);padding:1px 5px;border-radius:5px;font-size:13px}
+
+  .saving{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;
+    padding:8px 16px;border-radius:999px;font-size:13px;opacity:0;transition:.2s;pointer-events:none;z-index:5}
+  .saving.show{opacity:1}
+  .err{color:#b34a23;font-size:13px;margin-top:6px}
+
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="nav" aria-label="Разделы курса">
+    <a href="course-book.html" class="soon">Course Book</a>
+    <a href="workbook.html" class="soon">Workbook</a>
+    <a href="index.html" class="active">Check List</a>
+    <a href="help.html" class="soon">Help</a>
+  </nav>
+
+  <p class="eyebrow">Identity A2–B1 · Units 1–12</p>
+  <h1>Exam Preparation</h1>
+  <p class="sub" id="student-line">Студентка: <b id="student-name">—</b> · отмечай темы, которые уже уверенно закрыты</p>
+
+  <div class="progress glass">
+    <div class="progress-top">
+      <div class="progress-num"><span id="pct">0</span>%<small> &nbsp;<span id="ratio">0 / 0</span> закрыто</small></div>
+      <div class="progress-label">Готовность</div>
+    </div>
+    <div class="bar"><i id="bar-fill"></i></div>
+  </div>
+
+  <div class="conn" id="conn" hidden>
+    <div class="status" id="conn-status"></div>
+    <div class="err" id="conn-err"></div>
+  </div>
+
+  <div id="sections"></div>
+</div>
+
+<div class="saving" id="toast">Сохранено</div>
+
+<script>
+/* ============================================================
+   НАСТРОЙКА
+   ============================================================ */
+const STUDENT_ID   = "zlata";      // ← один студент
+const STUDENT_NAME = "Злата";      // ← отображаемое имя
+
+// === КЛЮЧ ВПИСАН (Supabase anon key, безопасен в браузере при включённом RLS) ===
+let SUPABASE_URL = "https://ihfmroksigkimufjxope.supabase.co";
+let SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImloZm1yb2tzaWdraW11Zmp4b3BlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM0MDk0NjgsImV4cCI6MjA4ODk4NTQ2OH0.hFOWUdgXBpKbqo0uUbuINVv8WGeirZFMZcBejMkbKwU";
+// =====================================================================
+
+/* ============================================================
+   ДАННЫЕ ЧЕК-ЛИСТА
+   key — стабильный идентификатор пункта (не меняй после старта,
+   иначе прогресс по этому пункту "забудется").
+   ============================================================ */
+const DATA = [
+  { id:"intake", title:"0. Входной уровень (до книги)", groups:[
+    { label:"Basic grammar", items:[
+      ["be","verb be: I am / you are / he is / was / were"],
+      ["havegot","have got / has got"],
+      ["thereis","there is / there are"],
+      ["articles","articles: a / an / the"],
+      ["plurals","plural nouns: book → books, city → cities"],
+      ["demonstr","this / that / these / those"],
+      ["subjpron","subject pronouns: I, you, he, she, it, we, they"],
+      ["objpron","object pronouns: me, you, him, her, us, them"],
+      ["possadj","possessive adjectives: my, your, his, her, our, their"],
+      ["posspron","possessive pronouns: mine, yours, his, hers"],
+      ["qwords","question words: who, what, where, when, why, how"],
+      ["can_ability","can / can’t for ability"],
+      ["imper","imperatives: Open the book. Don’t run."],
+      ["wordorder","basic word order in questions and negatives"],
+    ]},
+    { label:"Basic vocabulary", items:[
+      ["countries","countries and nationalities"],
+      ["numbers","numbers, dates, months, days"],
+      ["family0","family"],
+      ["colours","colours"],
+      ["classroom","classroom objects"],
+      ["appear0","appearance"],
+      ["nouns0","common everyday nouns"],
+      ["verbs0","basic verbs: go, do, have, make, like, want, need, live, study"],
+    ]},
+  ]},
+
+  { id:"u1", title:"Unit 1 — It’s all about me!", groups:[
+    { label:"Communication", items:[
+      ["u1c1","talk about favourites"],["u1c2","describe bedrooms"],
+      ["u1c3","talk about possessions"],["u1c4","describe appearance"],
+    ]},
+    { label:"Vocabulary", items:[
+      ["u1v1","common nouns"],["u1v2","bedroom furniture"],
+      ["u1v3","physical appearance"],["u1v4","mind maps as vocabulary strategy"],
+    ]},
+    { label:"Grammar", items:[
+      ["u1g1","there is / there are"],["u1g2","some / any"],
+      ["u1g3","prepositions of place: in, on, under, next to, between, behind"],
+      ["u1g4","have got"],["u1g5","adjective order: a beautiful big room / long dark hair"],
+    ]},
+    { label:"Skills", items:[
+      ["u1s1","making friends: Nice to meet you, etc."],
+      ["u1s2","scanning for key words"],["u1s3","speaking exam part 1: personal questions"],
+    ]},
+  ]},
+
+  { id:"u2", title:"Unit 2 — Live and learn!", groups:[
+    { label:"Communication", items:[
+      ["u2c1","talk about routines"],["u2c2","talk about lifestyle"],["u2c3","talk about habits"],
+    ]},
+    { label:"Vocabulary", items:[
+      ["u2v1","daily routine"],["u2v2","telling the time"],["u2v3","everyday activities"],
+    ]},
+    { label:"Grammar", items:[
+      ["u2g1","Present Simple"],["u2g2","prepositions of time: at / on / in"],
+      ["u2g3","adverbs of frequency: always, usually, often, sometimes, never"],
+      ["u2g4","expressions of frequency: once a week, twice a month, every day"],
+    ]},
+    { label:"Skills", items:[
+      ["u2s1","agreeing/disagreeing: So do I / Neither do I"],
+      ["u2s2","giving opinions"],["u2s3","self-motivation"],
+    ]},
+  ]},
+
+  { id:"u3", title:"Unit 3 — I love it!", groups:[
+    { label:"Communication", items:[
+      ["u3c1","talk about free time"],["u3c2","talk about ability"],["u3c3","talk about likes and dislikes"],
+    ]},
+    { label:"Vocabulary", items:[
+      ["u3v1","free-time activities"],["u3v2","play / do / go with sports and activities"],
+      ["u3v3","personality adjectives"],
+    ]},
+    { label:"Grammar", items:[
+      ["u3g1","can / can’t for ability"],["u3g2","adverbs of manner: well, badly, quickly, slowly"],
+      ["u3g3","like / love / enjoy / hate + -ing"],
+    ]},
+    { label:"Skills", items:[
+      ["u3s1","making suggestions: Let’s…, How about…?"],
+      ["u3s2","responding to suggestions"],["u3s3","planning and checking writing"],
+      ["u3s4","reading exam part 2"],
+    ]},
+  ]},
+
+  { id:"u4", title:"Unit 4 — Look at me!", groups:[
+    { label:"Communication", items:[
+      ["u4c1","talk about clothes and style"],["u4c2","talk about what is happening now"],
+      ["u4c3","talk about the present"],
+    ]},
+    { label:"Vocabulary", items:[
+      ["u4v1","clothes and accessories"],["u4v2","adjectives for clothes"],
+      ["u4v3","shops"],["u4v4","Venn diagrams as vocabulary strategy"],
+    ]},
+    { label:"Grammar", items:[
+      ["u4g1","Present Continuous"],["u4g2","Present Simple vs Present Continuous"],
+      ["u4g3","dynamic verbs vs stative verbs (I am wearing / I like)"],
+    ]},
+    { label:"Skills", items:[
+      ["u4s1","shopping dialogue: Can I help you?"],["u4s2","describing what someone is wearing"],
+      ["u4s3","making a first impression"],["u4s4","self-awareness"],
+    ]},
+  ]},
+
+  { id:"u5", title:"Unit 5 — Food for thought!", groups:[
+    { label:"Communication", items:[
+      ["u5c1","talk about food and drink"],["u5c2","talk about quantity"],["u5c3","talk about diet"],
+    ]},
+    { label:"Vocabulary", items:[
+      ["u5v1","food and drink"],["u5v2","portions and containers"],
+      ["u5v3","adjectives for food and drink"],["u5v4","labelling objects as vocabulary strategy"],
+    ]},
+    { label:"Grammar", items:[
+      ["u5g1","countable and uncountable nouns"],["u5g2","some / any / no"],
+      ["u5g3","much / many"],["u5g4","a lot of / lots of"],["u5g5","a few / a little"],
+      ["u5g6","too much / too many"],["u5g7","enough / not enough"],
+      ["u5g8","too + adjective"],["u5g9","adjective + enough"],
+    ]},
+    { label:"Skills", items:[
+      ["u5s1","café dialogue: I’d like…, I’ll have…"],["u5s2","writing an opinion essay"],
+      ["u5s3","talking about food choices"],
+    ]},
+  ]},
+
+  { id:"u6", title:"Unit 6 — We are family!", groups:[
+    { label:"Communication", items:[
+      ["u6c1","talk about family"],["u6c2","talk about the past"],
+    ]},
+    { label:"Vocabulary", items:[
+      ["u6v1","family"],["u6v2","jobs"],["u6v3","past time expressions: yesterday, last week, ago, in 2020"],
+    ]},
+    { label:"Grammar", items:[
+      ["u6g1","Past Simple: be — was / were"],["u6g2","Past Simple: can — could / couldn’t"],
+      ["u6g3","Past Simple: regular verbs — played, watched, visited"],
+    ]},
+    { label:"Skills", items:[
+      ["u6s1","describing people"],["u6s2","be like / look like"],
+      ["u6s3","talking about historical/family events"],["u6s4","teamwork"],
+    ]},
+  ]},
+
+  { id:"u7", title:"Unit 7 — Home sweet home!", groups:[
+    { label:"Communication", items:[
+      ["u7c1","talk about houses"],["u7c2","talk about the past"],
+    ]},
+    { label:"Vocabulary", items:[
+      ["u7v1","parts of the house"],["u7v2","furniture"],
+      ["u7v3","sequencers: first, then, after that, finally"],
+    ]},
+    { label:"Grammar", items:[
+      ["u7g1","Past Simple: irregular verbs"],["u7g2","Past Continuous"],
+      ["u7g3","Past Simple vs Past Continuous (I was watching TV when mum came home)"],
+    ]},
+    { label:"Skills", items:[
+      ["u7s1","showing interest: Lucky you! Wow! Cool!"],["u7s2","giving reasons"],
+      ["u7s3","listening exam part 4"],["u7s4","online interaction"],
+    ]},
+  ]},
+
+  { id:"u8", title:"Unit 8 — Our beautiful world", groups:[
+    { label:"Communication", items:[
+      ["u8c1","talk about places"],["u8c2","make comparisons"],
+    ]},
+    { label:"Vocabulary", items:[
+      ["u8v1","the natural world"],["u8v2","animals"],["u8v3","weather"],["u8v4","places in nature"],
+    ]},
+    { label:"Grammar", items:[
+      ["u8g1","articles: a / an / the / zero article"],["u8g2","comparative adjectives: bigger, more beautiful"],
+      ["u8g3","not as… as"],["u8g4","less than"],["u8g5","superlatives: the biggest, the most interesting"],
+    ]},
+    { label:"Skills", items:[
+      ["u8s1","talking about the weather"],["u8s2","predicting content before reading"],
+      ["u8s3","discussing nature and animals"],
+    ]},
+  ]},
+
+  { id:"u9", title:"Unit 9 — A bright future!", groups:[
+    { label:"Communication", items:[
+      ["u9c1","talk about jobs"],["u9c2","talk about intentions"],
+      ["u9c3","talk about predictions"],["u9c4","talk about future arrangements"],
+    ]},
+    { label:"Vocabulary", items:[
+      ["u9v1","jobs"],["u9v2","job characteristics"],
+      ["u9v3","future time expressions: tomorrow, next year, soon, later"],
+    ]},
+    { label:"Grammar", items:[
+      ["u9g1","be going to for intentions"],["u9g2","be going to for predictions"],
+      ["u9g3","Present Continuous for future arrangements"],
+      ["u9g4","be going to vs Present Continuous"],
+    ]},
+    { label:"Skills", items:[
+      ["u9s1","formal emails"],["u9s2","talking on the phone"],
+      ["u9s3","setting goals"],["u9s4","time management"],
+    ]},
+  ]},
+
+  { id:"u10", title:"Unit 10 — In the city!", groups:[
+    { label:"Communication", items:[
+      ["u10c1","talk about cities"],["u10c2","talk about the future"],["u10c3","talk about real conditions"],
+    ]},
+    { label:"Vocabulary", items:[
+      ["u10v1","places in cities"],["u10v2","compound nouns connected with cities"],
+      ["u10v3","adjectives for cities"],
+    ]},
+    { label:"Grammar", items:[
+      ["u10g1","will for predictions and future facts"],["u10g2","will for offers"],
+      ["u10g3","will for promises"],["u10g4","will for spontaneous decisions"],
+      ["u10g5","First Conditional"],["u10g6","when / as soon as / unless"],
+    ]},
+    { label:"Skills", items:[
+      ["u10s1","asking for directions"],["u10s2","giving directions"],
+      ["u10s3","linking words in writing"],["u10s4","listening and reading exam practice"],
+    ]},
+  ]},
+
+  { id:"u11", title:"Unit 11 — Sport for all", groups:[
+    { label:"Communication", items:[
+      ["u11c1","talk about sports"],["u11c2","talk about experiences"],
+    ]},
+    { label:"Vocabulary", items:[
+      ["u11v1","sports"],["u11v2","sports places"],["u11v3","sports equipment"],["u11v4","people in sport"],
+    ]},
+    { label:"Grammar", items:[
+      ["u11g1","Present Perfect"],["u11g2","Present Perfect with ever / never"],
+      ["u11g3","Present Perfect vs Past Simple"],
+    ]},
+    { label:"Skills", items:[
+      ["u11s1","making arrangements"],["u11s2","I’d rather…"],["u11s3","I’d prefer…"],
+      ["u11s4","guessing meaning from context"],["u11s5","speaking exam part 2"],
+    ]},
+  ]},
+
+  { id:"u12", title:"Unit 12 — What a feeling!", groups:[
+    { label:"Communication", items:[
+      ["u12c1","talk about feelings"],["u12c2","talk about recent actions"],
+      ["u12c3","talk about social situations"],
+    ]},
+    { label:"Vocabulary", items:[
+      ["u12v1","feelings and emotions"],["u12v2","expressing emotions"],
+      ["u12v3","interactions"],["u12v4","-ed / -ing adjectives: bored/boring, excited/exciting"],
+    ]},
+    { label:"Grammar", items:[
+      ["u12g1","Present Perfect with just"],["u12g2","Present Perfect with yet"],
+      ["u12g3","Present Perfect with already"],
+      ["u12g4","some/any/no/every compounds: someone, anything, nothing, everyone…"],
+    ]},
+    { label:"Skills", items:[
+      ["u12s1","making offers"],["u12s2","responding to offers"],
+      ["u12s3","taking turns in conversation"],
+      ["u12s4","discussing cyberbullying and social situations"],["u12s5","problem-solving"],
+    ]},
+  ]},
+
+  { id:"writing", title:"Writing checklist", groups:[
+    { label:"Она должна уметь писать", items:[
+      ["w1","informal email"],["w2","formal email"],["w3","opinion essay"],
+      ["w4","short description of a person"],["w5","short description of a place"],
+      ["w6","short story in the past"],["w7","post / invitation / short message"],
+      ["w8","answer reading questions in full sentences"],
+      ["w9","linking words: and, but, because, so, however, also, first, then, finally"],
+    ]},
+  ]},
+
+  { id:"speaking", title:"Speaking checklist", groups:[
+    { label:"Она должна уметь говорить про", items:[
+      ["sp1","herself"],["sp2","favourites"],["sp3","bedroom / house"],["sp4","possessions"],
+      ["sp5","appearance"],["sp6","daily routine"],["sp7","lifestyle and habits"],
+      ["sp8","free time"],["sp9","likes and dislikes"],["sp10","ability"],
+      ["sp11","clothes and style"],["sp12","food and diet"],["sp13","family"],
+      ["sp14","past events"],["sp15","houses"],["sp16","nature and animals"],
+      ["sp17","comparisons"],["sp18","jobs and future plans"],["sp19","city and directions"],
+      ["sp20","sports and experiences"],["sp21","feelings and recent actions"],
+    ]},
+  ]},
+
+  { id:"diag", title:"С чего начать проверку", groups:[
+    { label:"Порядок диагностики", items:[
+      ["d1","Present Simple"],["d2","Present Continuous"],["d3","Present Simple vs Present Continuous"],
+      ["d4","Past Simple: be / regular / irregular"],["d5","Past Continuous"],
+      ["d6","Past Simple vs Past Continuous"],["d7","Future: going to / will / Present Continuous"],
+      ["d8","First Conditional"],["d9","Present Perfect"],["d10","Present Perfect vs Past Simple"],
+      ["d11","some/any/no/much/many/enough/too"],["d12","comparatives / superlatives"],
+      ["d13","can / should"],["d14","question forms"],["d15","writing: email + opinion essay"],
+      ["d16","speaking: self, routine, past, future, city, sport, feelings"],
+    ]},
+  ]},
+];
+
+/* ============================================================
+   ЛОГИКА
+   ============================================================ */
+const TICK = '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>';
+let sb = null;
+const state = {}; // item_key -> {checked, checked_at}
+let allKeys = [];
+
+document.getElementById("student-name").textContent = STUDENT_NAME;
+
+function fmtDate(iso){
+  if(!iso) return "";
+  const d = new Date(iso);
+  return d.toLocaleDateString("ru-RU",{day:"2-digit",month:"2-digit",year:"2-digit"});
+}
+
+function buildDOM(){
+  const root = document.getElementById("sections");
+  root.innerHTML = "";
+  allKeys = [];
+  DATA.forEach((sec,i)=>{
+    const det = document.createElement("details");
+    det.className = "section glass";
+    det.dataset.sec = sec.id;
+    if(i < 1) det.open = true;
+    const sum = document.createElement("summary");
+    sum.innerHTML =
+      '<span class="sec-chevron"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span>'
+      +'<span class="sec-title">'+sec.title+'</span>'
+      +'<span class="sec-count" data-count></span>';
+    det.appendChild(sum);
+    const body = document.createElement("div");
+    body.className = "sec-body";
+    sec.groups.forEach(g=>{
+      const gl = document.createElement("div");
+      gl.className = "group-label";
+      gl.textContent = g.label;
+      body.appendChild(gl);
+      g.items.forEach(([key,text])=>{
+        allKeys.push(key);
+        const it = document.createElement("div");
+        it.className = "item";
+        it.dataset.key = key;
+        it.innerHTML =
+          '<span class="box">'+TICK+'</span>'
+          +'<span class="item-text">'+text+'</span>'
+          +'<span class="item-date" data-date></span>';
+        it.addEventListener("click",()=>toggle(key));
+        body.appendChild(it);
+      });
+    });
+    det.appendChild(body);
+    root.appendChild(det);
+  });
+  render();
+}
+
+function render(){
+  let done = 0;
+  document.querySelectorAll(".item").forEach(it=>{
+    const k = it.dataset.key;
+    const s = state[k];
+    const on = s && s.checked;
+    it.classList.toggle("done", !!on);
+    it.querySelector("[data-date]").textContent = on ? fmtDate(s.checked_at) : "";
+    if(on) done++;
+  });
+  // per-section counts
+  document.querySelectorAll(".section").forEach(det=>{
+    const items = det.querySelectorAll(".item");
+    let d = 0;
+    items.forEach(it=>{ if(state[it.dataset.key] && state[it.dataset.key].checked) d++; });
+    det.querySelector("[data-count]").textContent = d+" / "+items.length;
+    det.dataset.complete = (d===items.length && items.length>0) ? "1" : "0";
+  });
+  const total = allKeys.length;
+  const pct = total ? Math.round(done/total*100) : 0;
+  document.getElementById("pct").textContent = pct;
+  document.getElementById("ratio").textContent = done+" / "+total;
+  document.getElementById("bar-fill").style.width = pct+"%";
+}
+
+let toastTimer;
+function toast(msg){
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove("show"),1400);
+}
+
+async function toggle(key){
+  if(!sb){ toast("Сначала подключи базу"); flashConn(); return; }
+  const cur = state[key] && state[key].checked;
+  const next = !cur;
+  const ts = next ? new Date().toISOString() : null;
+  state[key] = {checked:next, checked_at:ts};   // optimistic
+  render();
+  const { error } = await sb.from("exam_checklist")
+    .upsert({
+      student_id: STUDENT_ID, item_key: key,
+      checked: next, checked_at: ts, updated_at: new Date().toISOString()
+    }, { onConflict: "student_id,item_key" });
+  if(error){
+    state[key] = {checked:cur, checked_at: cur ? (state[key].checked_at) : null}; // revert
+    render();
+    toast("Ошибка сохранения");
+    console.error(error);
+  } else {
+    toast(next ? "Закрыто ✓" : "Снято");
+  }
+}
+
+async function loadState(){
+  const { data, error } = await sb.from("exam_checklist")
+    .select("item_key,checked,checked_at")
+    .eq("student_id", STUDENT_ID);
+  if(error){ console.error(error); throw error; }
+  (data||[]).forEach(r=>{ state[r.item_key] = {checked:r.checked, checked_at:r.checked_at}; });
+  render();
+}
+
+function flashConn(){
+  const c = document.getElementById("conn");
+  c.hidden = false;
+  c.style.outline = "2px solid var(--accent)";
+  setTimeout(()=>c.style.outline="",600);
+}
+
+async function connect(url,key){
+  try{
+    sb = supabase.createClient(url, key);
+    await loadState();
+    return true;
+  }catch(e){
+    const c = document.getElementById("conn");
+    c.hidden = false;
+    document.getElementById("conn-err").textContent =
+      "Нет связи с базой. Возможно, проект Supabase на паузе — зайди в дашборд и нажми Resume. ("+(e.message||e)+")";
+    sb = null;
+    return false;
+  }
+}
+
+// init
+buildDOM();
+if(SUPABASE_URL && SUPABASE_KEY){
+  connect(SUPABASE_URL, SUPABASE_KEY);
+} else {
+  const c = document.getElementById("conn");
+  c.hidden = false;
+  document.getElementById("conn-err").textContent =
+    "Ключ базы не вписан в файл. Прогресс не сохраняется.";
+}
+</script>
+</body>
+</html>
