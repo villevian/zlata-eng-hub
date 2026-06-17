@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Unit 1 — It's all about me!</title>
+<style>
+  :root{--ink:#1f2421;--muted:#5a6661;--accent:#7a5cc9;--book-blue:#1b9fd8;
+    --glass-bg:rgba(255,255,255,.55);--glass-strong:rgba(255,255,255,.82);
+    --glass-border:rgba(255,255,255,.7);--shadow:0 1px 2px rgba(31,36,33,.05),0 12px 32px rgba(31,36,33,.1);--radius:14px}
+  *{box-sizing:border-box}html,body{margin:0;min-height:100%}
+  body{color:var(--ink);font-family:"Iowan Old Style",Georgia,"Times New Roman",serif;line-height:1.5;
+    background-image:url("bg.png");background-size:cover;background-position:center top;
+    background-attachment:fixed;background-repeat:no-repeat;background-color:#cfe0f1}
+  .wrap{max-width:780px;margin:0 auto;padding:28px 18px 96px}
+  .nav{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:22px;background:var(--glass-bg);
+    backdrop-filter:blur(18px) saturate(1.4);-webkit-backdrop-filter:blur(18px) saturate(1.4);
+    border:1px solid var(--glass-border);border-radius:14px;padding:8px;box-shadow:var(--shadow)}
+  .nav a{flex:1;text-align:center;padding:10px 12px;border-radius:10px;text-decoration:none;color:var(--ink);
+    font-size:14px;font-weight:600;transition:.15s;white-space:nowrap;font-family:inherit}
+  .nav a:hover{background:rgba(255,255,255,.5)}.nav a.active{background:var(--ink);color:#fff}
+  .nav a.soon{color:var(--muted);cursor:not-allowed}.nav a.soon:hover{background:transparent}
+  .nav a.soon::after{content:" · скоро";font-size:10px;font-weight:400;opacity:.6;font-family:ui-monospace,monospace}
+  .crumb{font-family:ui-monospace,monospace;font-size:12px;color:var(--accent);margin:0 0 6px}
+  .crumb a{color:var(--accent);text-decoration:none}.crumb a:hover{text-decoration:underline}
+  .head{display:flex;align-items:center;gap:16px;margin-bottom:6px}
+  .head .u{flex:none;width:64px;height:64px;border-radius:14px;background:var(--book-blue);color:#fff;
+    display:grid;place-items:center;font-size:34px;font-weight:700;box-shadow:var(--shadow)}
+  h1{font-size:clamp(28px,5vw,38px);margin:0;font-weight:600;letter-spacing:-.015em;text-shadow:0 1px 2px rgba(255,255,255,.5)}
+  .meta{margin:8px 0 24px;font-size:13.5px;opacity:.85}.meta b{color:var(--accent)}
+  .glass{background:var(--glass-strong);backdrop-filter:blur(20px) saturate(1.4);
+    -webkit-backdrop-filter:blur(20px) saturate(1.4);border:1px solid var(--glass-border);
+    border-radius:var(--radius);box-shadow:var(--shadow)}
+  .tile{display:flex;align-items:center;gap:14px;padding:16px 18px;margin-bottom:10px;text-decoration:none;
+    color:inherit;transition:transform .15s,box-shadow .15s}
+  .tile:hover{transform:translateY(-2px);box-shadow:0 4px 8px rgba(31,36,33,.08),0 18px 44px rgba(31,36,33,.16)}
+  .tile.soon{opacity:.6;cursor:not-allowed;pointer-events:none}
+  .tile .code{flex:none;width:48px;height:48px;border-radius:10px;background:var(--book-blue);color:#fff;
+    display:grid;place-items:center;font-weight:700;font-size:16px;font-family:ui-monospace,monospace}
+  .tile .body{flex:1}
+  .tile .t{font-weight:600;font-size:16px}
+  .tile .d{font-size:13px;color:var(--muted);margin-top:2px}
+  .tile .go{flex:none;color:var(--accent);font-weight:700;font-size:14px}
+  .tile.soon .go{color:var(--muted)}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="nav">
+    <a href="course-book.html">Course Book</a>
+    <a href="workbook.html" class="soon">Workbook</a>
+    <a href="index.html">Check List</a>
+    <a href="help.html" class="soon">Help</a>
+  </nav>
+  <p class="crumb"><a href="course-book.html">Course Book</a> › Unit 1</p>
+  <div class="head"><div class="u">1</div><h1>It's all about me!</h1></div>
+  <p class="meta"><b>Vocabulary:</b> Common nouns · Bedroom furniture · Physical appearance &nbsp;·&nbsp; <b>Grammar:</b> there is/are · some/any · prepositions of place · have got · adjective order</p>
+
+  <a class="tile glass" href="unit-1-1.html">
+    <span class="code">1.1</span>
+    <span class="body"><span class="t">Talk about favourites</span><span class="d">Common nouns · mind maps · Liam's vlog · all about me</span></span>
+    <span class="go">Открыть →</span>
+  </a>
+  <a class="tile glass soon">
+    <span class="code">1.2</span>
+    <span class="body"><span class="t">My room</span><span class="d">Bedroom furniture · there is/are · prepositions of place</span></span>
+    <span class="go">скоро</span>
+  </a>
+  <a class="tile glass soon">
+    <span class="code">1.3</span>
+    <span class="body"><span class="t">Describing appearance</span><span class="d">Physical appearance · have got · adjective order</span></span>
+    <span class="go">скоро</span>
+  </a>
+  <a class="tile glass soon">
+    <span class="code">1.4</span>
+    <span class="body"><span class="t">Skills & Culture</span><span class="d">National stereotypes · making friends · scanning</span></span>
+    <span class="go">скоро</span>
+  </a>
+</div>
+</body>
+</html>

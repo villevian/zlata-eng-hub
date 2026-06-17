@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Unit 1.1 — Talk about favourites</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Patrick+Hand&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#243042;--muted:#6b7891;--done:#1faa6b;--accent:#7a5cc9;--wrong:#ef5a45;
+    --book-blue:#0fa3e0;--book-blue-d:#0a7fb3;
+    --pink:#ff5a9e;--yellow:#ffd23f;--orange:#ff8a3d;--green:#1faa6b;--purple:#8b5cf6;
+    --glass-bg:rgba(255,255,255,.6);--glass-strong:rgba(255,255,255,.88);
+    --glass-border:rgba(255,255,255,.8);
+    --shadow:0 2px 4px rgba(36,48,66,.06),0 14px 38px rgba(36,48,66,.12);
+    --radius:18px;
+    --hand:"Patrick Hand",cursive;
+    --display:"Fredoka",system-ui,sans-serif;
+    --body:"Nunito",system-ui,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;min-height:100%}
+  body{color:var(--ink);font-family:var(--body);
+    line-height:1.5;-webkit-font-smoothing:antialiased;
+    background-image:url("bg.png");background-size:cover;background-position:center top;
+    background-attachment:fixed;background-repeat:no-repeat;background-color:#cfe0f1}
+  .wrap{max-width:840px;margin:0 auto;padding:28px 18px 96px}
+
+  /* nav */
+  .nav{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:22px;background:var(--glass-bg);
+    backdrop-filter:blur(18px) saturate(1.4);-webkit-backdrop-filter:blur(18px) saturate(1.4);
+    border:1px solid var(--glass-border);border-radius:14px;padding:8px;box-shadow:var(--shadow)}
+  .nav a{flex:1;text-align:center;padding:10px 12px;border-radius:10px;text-decoration:none;
+    color:var(--ink);font-size:14px;font-weight:600;transition:.15s;white-space:nowrap;font-family:inherit}
+  .nav a:hover{background:rgba(255,255,255,.5)}
+  .nav a.active{background:var(--ink);color:#fff}
+  .nav a.soon{color:var(--muted);cursor:not-allowed}
+  .nav a.soon:hover{background:transparent}
+  .nav a.soon::after{content:" · скоро";font-size:10px;font-weight:400;opacity:.6;font-family:ui-monospace,monospace}
+
+  .crumb{font-family:ui-monospace,monospace;font-size:12px;color:var(--accent);margin:0 0 6px}
+  .crumb a{color:var(--accent);text-decoration:none}
+  .crumb a:hover{text-decoration:underline}
+
+  /* book-style lesson header */
+  .lesson-head{display:flex;align-items:center;gap:14px;margin:0 0 6px}
+  .lesson-head .u{flex:none;width:60px;height:60px;border-radius:16px;
+    background:linear-gradient(145deg,var(--book-blue),var(--book-blue-d));
+    color:#fff;display:grid;place-items:center;font-size:32px;font-weight:700;font-family:var(--display);
+    box-shadow:0 6px 16px rgba(15,163,224,.4);transform:rotate(-3deg)}
+  h1{font-family:var(--display);font-size:clamp(28px,5.5vw,40px);line-height:1.02;margin:0;font-weight:700;
+    letter-spacing:-.01em;color:#163a52;text-shadow:0 2px 0 rgba(255,255,255,.6)}
+  .meta{margin:8px 0 22px;font-family:var(--body);font-size:14px;color:var(--ink);opacity:.9;font-weight:600}
+  .meta b{color:var(--accent)}
+
+  .glass{background:var(--glass-strong);backdrop-filter:blur(20px) saturate(1.4);
+    -webkit-backdrop-filter:blur(20px) saturate(1.4);border:1px solid var(--glass-border);
+    border-radius:var(--radius);box-shadow:var(--shadow)}
+
+  section{padding:22px 24px;margin-bottom:18px;position:relative}
+  /* цветная «наклейка»-ярлык секции */
+  .sec-tag{display:inline-flex;align-items:center;gap:9px;margin:0 0 14px;padding:7px 16px 7px 10px;
+    border-radius:999px;font-family:var(--display);font-size:13px;letter-spacing:.01em;font-weight:600;
+    color:#fff;background:var(--book-blue);box-shadow:0 4px 10px rgba(15,163,224,.3);transform:rotate(-1deg)}
+  .sec-tag .n{background:#fff;color:var(--book-blue);width:24px;height:24px;border-radius:50%;
+    display:grid;place-items:center;font-weight:700;font-family:var(--display)}
+  /* разные цвета наклеек по секциям */
+  section:nth-of-type(2) .sec-tag{background:var(--green);box-shadow:0 4px 10px rgba(31,170,107,.3)}
+  section:nth-of-type(2) .sec-tag .n{color:var(--green)}
+  section:nth-of-type(3) .sec-tag{background:var(--pink);box-shadow:0 4px 10px rgba(255,90,158,.3)}
+  section:nth-of-type(4) .sec-tag{background:var(--purple);box-shadow:0 4px 10px rgba(139,92,246,.3)}
+  section:nth-of-type(4) .sec-tag .n{color:var(--purple)}
+  section:nth-of-type(5) .sec-tag{background:var(--orange);box-shadow:0 4px 10px rgba(255,138,61,.3)}
+  section:nth-of-type(6) .sec-tag{background:var(--pink);box-shadow:0 4px 10px rgba(255,90,158,.3)}
+  section:nth-of-type(6) .sec-tag .n{color:var(--pink)}
+  h2{font-family:var(--display);font-size:21px;margin:0 0 4px;font-weight:600;color:#163a52}
+  .instr{font-size:14.5px;color:var(--ink);opacity:.85;margin:0 0 16px;font-weight:600}
+
+  /* board image */
+  .board{width:100%;border-radius:12px;display:block;box-shadow:0 6px 20px rgba(31,36,33,.18)}
+
+  /* audio player stub */
+  .audio{display:flex;align-items:center;gap:12px;background:rgba(27,159,216,.1);
+    border:1px solid rgba(27,159,216,.3);border-radius:12px;padding:10px 14px;margin:0 0 14px}
+  .audio .ic{flex:none;width:36px;height:36px;border-radius:50%;background:var(--book-blue);
+    color:#fff;display:grid;place-items:center;cursor:pointer;font-size:15px}
+  .audio .lbl{font-size:13px;color:var(--muted)}
+  .audio .lbl b{color:var(--ink);font-family:ui-monospace,monospace}
+  .audio audio{height:32px}
+
+  /* match exercise */
+  .match-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:10px}
+  .match-row{display:flex;align-items:center;gap:9px;background:#fff;
+    border:2px solid #e7ecf3;border-radius:14px;padding:8px 10px;transition:.15s}
+  .match-row .num{flex:none;width:30px;height:30px;border-radius:50%;
+    background:linear-gradient(145deg,var(--book-blue),var(--book-blue-d));
+    color:#fff;display:grid;place-items:center;font-weight:700;font-size:15px;font-family:var(--display);
+    box-shadow:0 3px 6px rgba(15,163,224,.35)}
+  .match-row select{flex:1;min-width:0;border:1.5px solid #dce3ec;border-radius:9px;
+    padding:6px 7px;font-family:var(--body);font-size:13.5px;font-weight:600;background:#fff;color:var(--ink);cursor:pointer}
+  .match-row.correct{background:#e8faf1;border-color:var(--done)}
+  .match-row.wrong{background:#ffecea;border-color:var(--wrong)}
+  .match-row .mark{flex:none;width:20px;text-align:center;font-weight:700;font-size:16px}
+  .match-row.correct .mark{color:var(--done)}
+  .match-row.wrong .mark{color:var(--wrong)}
+
+  .btn{display:inline-flex;align-items:center;gap:8px;padding:11px 22px;border:0;border-radius:999px;
+    background:linear-gradient(145deg,var(--accent),#6847b5);color:#fff;font-size:15px;font-weight:700;
+    font-family:var(--display);cursor:pointer;transition:.15s;box-shadow:0 4px 12px rgba(122,92,201,.35)}
+  .btn:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(122,92,201,.45)}
+  .btn.ghost{background:#fff;color:var(--accent);border:2px solid #e3dbf5;box-shadow:none}
+  .btn.ghost:hover{background:#f6f2ff}
+  .btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;align-items:center}
+  .score{font-size:16px;font-weight:800;color:var(--done);font-family:var(--display)}
+
+  /* speaking / flip cards */
+  .flip-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px}
+  .flip{aspect-ratio:1.15;border-radius:16px;cursor:pointer;perspective:700px;background:none;border:0;padding:0;font-family:inherit}
+  .flip .inner{position:relative;width:100%;height:100%;transition:transform .45s cubic-bezier(.4,.2,.2,1);transform-style:preserve-3d}
+  .flip.flipped .inner{transform:rotateY(180deg)}
+  .flip .face{position:absolute;inset:0;border-radius:16px;display:grid;place-items:center;
+    backface-visibility:hidden;-webkit-backface-visibility:hidden;font-weight:700;font-size:16px;
+    font-family:var(--display);overflow:hidden}
+  .flip .front{background:linear-gradient(145deg,var(--book-blue),var(--book-blue-d));color:#fff;
+    box-shadow:0 5px 14px rgba(15,163,224,.3)}
+  .flip .front img{width:100%;height:100%;object-fit:contain;padding:10px;background:#fff}
+  .flip .front .qmark{font-size:34px;opacity:.9}
+  .flip .back{background:#fff;color:var(--accent);transform:rotateY(180deg);
+    border:3px solid var(--accent);box-shadow:0 5px 14px rgba(122,92,201,.2)}
+
+  /* mind map */
+  .mindmap{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:14px}
+  .branch{border-radius:16px;padding:14px;min-height:100px;border:2.5px dashed #cfd8e6;
+    background:#fff;transition:.15s}
+  .branch.over{border-color:var(--accent);background:#f6f2ff}
+  .branch h5{margin:0 0 8px;font-size:14px;font-family:var(--display);font-weight:600}
+  .branch.c1 h5{color:var(--book-blue)}.branch.c2 h5{color:var(--orange)}
+  .branch.c3 h5{color:var(--green)}.branch.c4 h5{color:var(--purple)}
+  .branch .drop{display:flex;flex-wrap:wrap;gap:6px;min-height:30px}
+  .word-pool{display:flex;flex-wrap:wrap;gap:8px;padding:14px;border-radius:16px;
+    background:#fff;border:2px solid #e7ecf3}
+  .chip{padding:8px 14px;border-radius:999px;background:var(--yellow);border:2px solid #f0c020;
+    font-size:14px;cursor:grab;user-select:none;font-weight:700;font-family:var(--display);color:#7a5800;
+    box-shadow:0 2px 5px rgba(240,192,32,.3)}
+  .chip.placed{background:#ede7fb;border-color:var(--accent);color:var(--accent)}
+  .chip:active{cursor:grabbing}
+
+  /* profile form */
+  .field{margin-bottom:14px}
+  .field label{display:block;font-weight:600;font-size:14px;margin-bottom:5px;color:var(--book-blue-d)}
+  .field input[type=text]{width:100%;padding:9px 11px;border:1px solid rgba(31,36,33,.18);
+    border-radius:9px;font-family:inherit;font-size:14px;background:#fff;color:var(--ink)}
+  .opts{display:flex;flex-wrap:wrap;gap:8px}
+  .opt{display:inline-flex;align-items:center;gap:6px;padding:7px 13px;border-radius:9px;
+    background:#fff;border:1px solid rgba(31,36,33,.15);cursor:pointer;font-size:13.5px}
+  .opt input{accent-color:var(--accent)}
+  .opt:has(input:checked){background:rgba(122,92,201,.12);border-color:var(--accent)}
+
+  /* video stub */
+  .video-stub{aspect-ratio:16/9;border-radius:12px;background:linear-gradient(135deg,#2a8fc0,#0f6f9e);
+    display:grid;place-items:center;color:#fff;text-align:center;cursor:pointer;position:relative;overflow:hidden}
+  .video-stub .play{width:64px;height:64px;border-radius:50%;background:rgba(255,255,255,.25);
+    display:grid;place-items:center;font-size:24px;margin-bottom:10px;backdrop-filter:blur(4px)}
+  .video-stub .vt{font-weight:600;font-size:15px}
+  .video-stub .vh{font-size:12px;opacity:.85;margin-top:4px;font-family:ui-monospace,monospace}
+
+  /* answer reveal */
+  details.reveal{margin-top:10px;background:rgba(255,255,255,.45);border-radius:9px;padding:8px 12px;
+    border:1px solid rgba(31,36,33,.1)}
+  details.reveal summary{cursor:pointer;font-size:13px;color:var(--accent);font-weight:600}
+  details.reveal ol{margin:8px 0 0;padding-left:20px;font-size:13.5px}
+  details.reveal li{margin-bottom:3px}
+
+  .everyday{display:grid;grid-template-columns:auto 1fr;gap:4px 16px;font-size:14px;margin-top:8px}
+  .everyday b{color:var(--book-blue-d)}
+
+  .funfact{background:rgba(255,221,87,.25);border:1px solid rgba(220,190,40,.4);border-radius:12px;
+    padding:12px 16px;font-size:14px;margin-top:12px}
+  .funfact b{color:#b58a00}
+
+  .save-toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--ink);
+    color:#fff;padding:8px 16px;border-radius:999px;font-size:13px;opacity:0;transition:.2s;pointer-events:none;z-index:9}
+  .save-toast.show{opacity:1}
+  .conn-warn{font-size:12px;color:var(--wrong);margin-top:8px}
+
+  @media (max-width:560px){.mindmap{grid-template-columns:1fr}}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="nav" aria-label="Разделы курса">
+    <a href="course-book.html">Course Book</a>
+    <a href="workbook.html" class="soon">Workbook</a>
+    <a href="index.html">Check List</a>
+    <a href="help.html" class="soon">Help</a>
+  </nav>
+
+  <p class="crumb"><a href="course-book.html">Course Book</a> › <a href="unit-1.html">Unit 1</a> › 1.1</p>
+
+  <div class="lesson-head">
+    <div class="u">1</div>
+    <h1>Talk about favourites</h1>
+  </div>
+  <p class="meta"><b>Vocabulary:</b> Common nouns · <b>Functions:</b> Describing things, making friends · <b>p.22–23</b></p>
+
+  <!-- BOARD VISUAL -->
+  <section class="glass">
+    <span class="sec-tag">My Favourite Things</span>
+    <img class="board" src="img/u1/board.jpg" alt="My Favourite Things board">
+  </section>
+
+  <!-- EX 1: MATCH -->
+  <section class="glass">
+    <span class="sec-tag"><span class="n">1</span> Vocabulary · Common nouns</span>
+    <h2>Match the words to the pictures</h2>
+    <p class="instr">Listen to the audio. Match each number on the board with the correct word. Then click <b>Check</b>.</p>
+
+    <div class="audio">
+      <span class="ic" title="play">▶</span>
+      <div class="lbl">Audio <b>028</b> · <span id="a028-state">add file later</span></div>
+      <audio id="a028" controls preload="none" src="audio/028.mp3"></audio>
+    </div>
+
+    <div class="match-grid" id="matchGrid"></div>
+    <div class="btn-row">
+      <button class="btn" id="checkMatch">Check</button>
+      <button class="btn ghost" id="resetMatch">Reset</button>
+      <span class="score" id="matchScore"></span>
+    </div>
+  </section>
+
+  <!-- EX 2: SPEAKING / FLIP -->
+  <section class="glass">
+    <span class="sec-tag"><span class="n">2</span> Speaking · Memory test</span>
+    <h2>Cover the words and test yourself</h2>
+    <p class="instr">Tap a card to flip it. Look at the picture, say the word, then check yourself.</p>
+    <div class="flip-grid" id="flipGrid"></div>
+    <p class="instr" style="margin-top:12px"><b>A:</b> What are these? &nbsp; <b>B:</b> Those are sunglasses.</p>
+  </section>
+
+  <!-- EX 3-4: MIND MAP -->
+  <section class="glass">
+    <span class="sec-tag"><span class="n">3</span> Vocabulary strategy · Mind maps</span>
+    <h2>Build the mind map</h2>
+    <p class="instr">Drag each word into the correct branch of "Favourite things".</p>
+    <div class="mindmap">
+      <div class="branch c1" data-branch="clothes"><h5>Clothes &amp; Accessories</h5><div class="drop"></div></div>
+      <div class="branch c2" data-branch="entertainment"><h5>Entertainment</h5><div class="drop"></div></div>
+      <div class="branch c3" data-branch="family"><h5>Family &amp; Friends</h5><div class="drop"></div></div>
+      <div class="branch c4" data-branch="technology"><h5>Technology</h5><div class="drop"></div></div>
+    </div>
+    <div class="word-pool" id="wordPool"></div>
+    <div class="btn-row">
+      <button class="btn" id="checkMap">Check</button>
+      <button class="btn ghost" id="resetMap">Reset</button>
+      <span class="score" id="mapScore"></span>
+    </div>
+  </section>
+
+  <!-- LIAM'S VLOG -->
+  <section class="glass">
+    <span class="sec-tag">Liam's Vlog · My 'Top 5'</span>
+    <h2>Watch the vlog</h2>
+    <div class="video-stub" id="vlog">
+      <div>
+        <div class="play">▶</div>
+        <div class="vt">Liam's Vlog — My 'Top 5'</div>
+        <div class="vh">add video later</div>
+      </div>
+    </div>
+
+    <h2 style="margin-top:18px;font-size:16px">While you watch (Audio 029)</h2>
+    <div class="audio">
+      <span class="ic" title="play">▶</span>
+      <div class="lbl">Audio <b>029</b> · <span>add file later</span></div>
+      <audio id="a029" controls preload="none" src="audio/029.mp3"></audio>
+    </div>
+    <p class="instr">Tick the things you hear. Which two are NOT in the vlog?</p>
+    <div class="flip-grid" id="vlogItems"></div>
+
+    <details class="reveal">
+      <summary>Comprehension check — questions</summary>
+      <ol>
+        <li>Where is Liam from?</li>
+        <li>What colour are his favourite trainers?</li>
+        <li>What colour are his headphones?</li>
+        <li>What are his posters of?</li>
+        <li>What's Liam's favourite thing?</li>
+      </ol>
+    </details>
+  </section>
+
+  <!-- ALL ABOUT ME PROFILE -->
+  <section class="glass">
+    <span class="sec-tag"><span class="n">5</span> Your turn · All about me</span>
+    <h2>All about me</h2>
+    <p class="instr">Fill in your profile — your answers save automatically.</p>
+
+    <div class="field"><label>My favourite person is</label><input type="text" data-key="person"></div>
+
+    <div class="field"><label>My favourite accessory is</label>
+      <div class="opts" data-key="accessory">
+        <label class="opt"><input type="radio" name="accessory" value="bag">bag</label>
+        <label class="opt"><input type="radio" name="accessory" value="trainers">trainers</label>
+        <label class="opt"><input type="radio" name="accessory" value="sunglasses">sunglasses</label>
+        <label class="opt"><input type="radio" name="accessory" value="jacket">jacket</label>
+        <label class="opt"><input type="radio" name="accessory" value="other">other</label>
+      </div>
+    </div>
+
+    <div class="field"><label>My favourite film is</label><input type="text" data-key="film"></div>
+    <div class="field"><label>My favourite TV programme is</label><input type="text" data-key="tv"></div>
+    <div class="field"><label>My favourite band is</label><input type="text" data-key="band"></div>
+
+    <div class="field"><label>My favourite style of music is</label>
+      <div class="opts" data-key="music">
+        <label class="opt"><input type="radio" name="music" value="rock">rock</label>
+        <label class="opt"><input type="radio" name="music" value="pop">pop</label>
+        <label class="opt"><input type="radio" name="music" value="hip hop">hip hop</label>
+        <label class="opt"><input type="radio" name="music" value="punk">punk</label>
+        <label class="opt"><input type="radio" name="music" value="other">other</label>
+      </div>
+    </div>
+
+    <div class="field"><label>My favourite app / video game is</label><input type="text" data-key="app"></div>
+    <div class="field"><label>My favourite thing about me is</label><input type="text" data-key="aboutme"></div>
+
+    <div class="conn-warn" id="profWarn" hidden></div>
+
+    <div class="everyday" style="margin-top:8px">
+      <b>Hey guys!</b><span>Ciao ragazzi!</span>
+      <b>tons of</b><span>un sacco di</span>
+      <b>cool</b><span>fantastico</span>
+      <b>I love</b><span>adoro</span>
+    </div>
+    <div class="funfact"><b>FUN FACT:</b> Percentage of British teens with a mobile = 90%!</div>
+  </section>
+</div>
+
+<div class="save-toast" id="toast">Сохранено</div>
+
+<script>
+/* ===== Supabase (профиль сохраняется) ===== */
+const STUDENT_ID = "zlata";
+const LESSON = "u1-1";
+const SUPABASE_URL = "https://ihfmroksigkimufjxope.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImloZm1yb2tzaWdraW11Zmp4b3BlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM0MDk0NjgsImV4cCI6MjA4ODk4NTQ2OH0.hFOWUdgXBpKbqo0uUbuINVv8WGeirZFMZcBejMkbKwU";
+let sb = null;
+try { sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY); } catch(e){}
+
+/* ===== Данные ===== */
+// слова Ex.1 (для select). Правильное соответствие номер→слово по доске.
+const WORDS = ["bag","best friend","brother and sister","celebrity","football","headphones",
+  "jacket","laptop computer","magazine","mobile phone","parents","pets","sunglasses",
+  "trainers","TV","video games"];
+const ANSWER = { // номер на доске → слово
+  1:"sunglasses",2:"trainers",3:"bag",4:"jacket",5:"football",6:"magazine",
+  7:"TV",8:"celebrity",9:"parents",10:"best friend",11:"pets",12:"brother and sister",
+  13:"headphones",14:"mobile phone",15:"laptop computer",16:"video games" };
+
+// mind map: слово → ветка
+const MAP = {
+  "trainers":"clothes","jacket":"clothes","sunglasses":"clothes","bag":"clothes",
+  "football":"entertainment","magazine":"entertainment","film":"entertainment","TV":"entertainment",
+  "parents":"family","best friend":"family","pets":"family","brother and sister":"family","baby":"family",
+  "headphones":"technology","mobile phone":"technology","laptop computer":"technology","video games":"technology","app":"technology","tablet":"technology"
+};
+const MAP_WORDS = Object.keys(MAP);
+
+/* ===== Ex.1 Match ===== */
+const grid = document.getElementById("matchGrid");
+for(let i=1;i<=16;i++){
+  const row=document.createElement("div");
+  row.className="match-row";row.dataset.num=i;
+  let opts='<option value="">— word —</option>'+WORDS.map(w=>`<option>${w}</option>`).join("");
+  row.innerHTML=`<span class="num">${i}</span><select>${opts}</select><span class="mark"></span>`;
+  grid.appendChild(row);
+}
+document.getElementById("checkMatch").onclick=()=>{
+  let ok=0;
+  grid.querySelectorAll(".match-row").forEach(r=>{
+    const n=r.dataset.num, sel=r.querySelector("select").value, mk=r.querySelector(".mark");
+    r.classList.remove("correct","wrong");
+    if(!sel){mk.textContent="";return;}
+    if(sel===ANSWER[n]){r.classList.add("correct");mk.textContent="✓";ok++;}
+    else{r.classList.add("wrong");mk.textContent="✕";}
+  });
+  document.getElementById("matchScore").textContent=`${ok} / 16`;
+};
+document.getElementById("resetMatch").onclick=()=>{
+  grid.querySelectorAll(".match-row").forEach(r=>{
+    r.classList.remove("correct","wrong");r.querySelector("select").value="";r.querySelector(".mark").textContent="";
+  });
+  document.getElementById("matchScore").textContent="";
+};
+
+/* ===== Ex.2 Flip cards ===== */
+function cardSlug(w){return w.replace(/ /g,"-");}
+function flipCard(w){
+  const slug=cardSlug(w);
+  const b=document.createElement("button");b.className="flip";
+  b.innerHTML=`<div class="inner">
+    <div class="face front">
+      <img src="img/u1/cards/${slug}.jpg" alt="${w}"
+           onerror="if(!this.dataset.png){this.dataset.png=1;this.src='img/u1/cards/${slug}.png';}else{this.style.display='none';this.nextElementSibling.style.display='block';}">
+      <span class="qmark" style="display:none">?</span>
+    </div>
+    <div class="face back">${w}</div></div>`;
+  b.onclick=()=>b.classList.toggle("flipped");
+  return b;
+}
+const flipItems=["sunglasses","trainers","football","magazine","headphones","mobile phone","laptop computer","video games"];
+const fg=document.getElementById("flipGrid");
+flipItems.forEach(w=>fg.appendChild(flipCard(w)));
+
+/* ===== vlog items (same flip style) ===== */
+const vItems=["trainers","headphones","football","video games","T-shirt","mobile phone","sunglasses","jacket"];
+const vg=document.getElementById("vlogItems");
+vItems.forEach(w=>vg.appendChild(flipCard(w)));
+
+/* ===== Ex.3 Mind map drag&drop ===== */
+const pool=document.getElementById("wordPool");
+MAP_WORDS.slice().sort(()=>Math.random()-.5).forEach(w=>{
+  const c=document.createElement("div");c.className="chip";c.draggable=true;c.textContent=w;c.dataset.word=w;
+  c.addEventListener("dragstart",e=>{e.dataTransfer.setData("text/plain",w);dragged=c;});
+  pool.appendChild(c);
+});
+let dragged=null;
+document.querySelectorAll(".branch").forEach(br=>{
+  br.addEventListener("dragover",e=>{e.preventDefault();br.classList.add("over");});
+  br.addEventListener("dragleave",()=>br.classList.remove("over"));
+  br.addEventListener("drop",e=>{
+    e.preventDefault();br.classList.remove("over");
+    if(dragged){br.querySelector(".drop").appendChild(dragged);dragged.classList.add("placed");}
+  });
+});
+pool.addEventListener("dragover",e=>e.preventDefault());
+pool.addEventListener("drop",e=>{e.preventDefault();if(dragged){pool.appendChild(dragged);dragged.classList.remove("placed");}});
+document.getElementById("checkMap").onclick=()=>{
+  let ok=0,total=MAP_WORDS.length;
+  document.querySelectorAll(".branch").forEach(br=>{
+    const want=br.dataset.branch;
+    br.querySelectorAll(".chip").forEach(c=>{
+      const right=MAP[c.dataset.word]===want;
+      c.style.background=right?"rgba(47,125,91,.18)":"rgba(192,67,42,.15)";
+      c.style.borderColor=right?"var(--done)":"var(--wrong)";
+      if(right)ok++;
+    });
+  });
+  document.getElementById("mapScore").textContent=`${ok} / ${total}`;
+};
+document.getElementById("resetMap").onclick=()=>{
+  document.querySelectorAll(".branch .chip").forEach(c=>{
+    c.style.background="";c.style.borderColor="";c.classList.remove("placed");pool.appendChild(c);
+  });
+  document.getElementById("mapScore").textContent="";
+};
+
+/* ===== vlog stub click ===== */
+document.getElementById("vlog").onclick=()=>{
+  alert("Video coming soon. Upload an mp4 or share a YouTube link to embed the player here.");
+};
+
+/* ===== Profile save to Supabase ===== */
+let toastTimer;
+function toast(m){const t=document.getElementById("toast");t.textContent=m;t.classList.add("show");
+  clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove("show"),1300);}
+function profileKey(k){return `${LESSON}:profile:${k}`;}
+
+async function saveField(key,val){
+  if(!sb){document.getElementById("profWarn").hidden=false;
+    document.getElementById("profWarn").textContent="No connection to the database — answers are not being saved.";return;}
+  const {error}=await sb.from("exam_checklist").upsert({
+    student_id:STUDENT_ID,item_key:profileKey(key),checked:true,
+    checked_at:new Date().toISOString(),updated_at:new Date().toISOString()
+  },{onConflict:"student_id,item_key"});
+  // примечание: текстовые ответы храним в отдельной таблице ниже; здесь только отметка "заполнено"
+  if(error)console.error(error);else toast("Сохранено");
+}
+
+// Текстовые/выбор ответы — отдельная таблица lesson_answers (значение в value).
+async function saveAnswer(key,val){
+  if(!sb){document.getElementById("profWarn").hidden=false;
+    document.getElementById("profWarn").textContent="No connection to the database — answers are not being saved.";return;}
+  const {error}=await sb.from("lesson_answers").upsert({
+    student_id:STUDENT_ID,answer_key:profileKey(key),value:val,updated_at:new Date().toISOString()
+  },{onConflict:"student_id,answer_key"});
+  if(error)console.error(error);else toast("Сохранено");
+}
+
+async function loadProfile(){
+  if(!sb)return;
+  const {data,error}=await sb.from("lesson_answers").select("answer_key,value")
+    .eq("student_id",STUDENT_ID).like("answer_key",`${LESSON}:profile:%`);
+  if(error){console.error(error);return;}
+  (data||[]).forEach(r=>{
+    const k=r.answer_key.split(":").pop();
+    const inp=document.querySelector(`input[type=text][data-key="${k}"]`);
+    if(inp){inp.value=r.value||"";return;}
+    const radio=document.querySelector(`.opts[data-key="${k}"] input[value="${r.value}"]`);
+    if(radio)radio.checked=true;
+  });
+}
+
+let typingTimer;
+document.querySelectorAll('input[type=text][data-key]').forEach(inp=>{
+  inp.addEventListener("input",()=>{
+    clearTimeout(typingTimer);
+    typingTimer=setTimeout(()=>saveAnswer(inp.dataset.key,inp.value),600);
+  });
+});
+document.querySelectorAll('.opts[data-key]').forEach(g=>{
+  g.addEventListener("change",e=>{ if(e.target.checked)saveAnswer(g.dataset.key,e.target.value); });
+});
+
+loadProfile();
+</script>
+</body>
+</html>
